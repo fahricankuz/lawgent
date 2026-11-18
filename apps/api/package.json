@@ -1,0 +1,33 @@
+{
+  "name": "@lawgent/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
+    "start": "tsx src/main.ts",
+    "seed": "tsx --env-file-if-exists=../../.env scripts/seed.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1171.0",
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.1.0",
+    "@fastify/multipart": "^10.0.0",
+    "@fastify/rate-limit": "^11.0.0",
+    "@lawgent/crypto": "workspace:*",
+    "@lawgent/db": "workspace:*",
+    "@lawgent/shared": "workspace:*",
+    "@node-rs/argon2": "^2.0.2",
+    "fastify": "^5.12.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "pino-pretty": "^13.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "5.9.3",
+    "vitest": "^4.0.0"
+  }
+}
