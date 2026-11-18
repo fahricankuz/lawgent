@@ -78,11 +78,22 @@ export async function buildApp(deps: Deps) {
   await app.register(multipart, { limits: { fileSize: deps.cfg.MAX_UPLOAD_MB * 1024 * 1024, files: 1 } });
   await app.register(rateLimit, { global: false });
 
-  // CSRF: değiştiren isteklerde Origin, web uygulamasının kaynağı olmalı.
+  // CSRF: değiştiren isteklerde Origin, web uygulamasının kaynağı (WEB_ORIGIN, virgülle birden çok)
+  // ya da isteğin geldiği adresin kendisi (aynı kaynak; ör. önizleme/vekil sunucu arkası) olmalı.
+  const allowed = new Set(deps.cfg.WEB_ORIGIN.split(',').map((o) => o.trim()));
   app.addHook('onRequest', async (req) => {
     if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return;
     const origin = req.headers.origin;
-    if (origin && origin !== deps.cfg.WEB_ORIGIN) throw new HttpError(403, 'Geçersiz kaynak', 'bad_origin');
+    if (!origin || allowed.has(origin)) return;
+    let originHost: string;
+    try {
+      originHost = new URL(origin).host;
+    } catch {
+      throw new HttpError(403, 'Geçersiz kaynak', 'bad_origin');
+    }
+    const fwd = req.headers['x-forwarded-host'];
+    const requestHost = (Array.isArray(fwd) ? fwd[0] : fwd?.split(',')[0]?.trim()) || req.headers.host;
+    if (originHost !== requestHost) throw new HttpError(403, 'Geçersiz kaynak', 'bad_origin');
   });
 
   // Oturum çözümleme
