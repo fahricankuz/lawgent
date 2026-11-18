@@ -161,7 +161,8 @@ export function usedCitationNumbers(text: string, max: number): Set<number> {
 export function extractiveAnswer(chunks: RetrievedChunk[]): string {
   if (!chunks.length) return 'Seçili belgelerde bu soruyla ilgili bir bölüm bulamadım.';
   const lines = chunks.slice(0, 3).map((c, i) => {
-    const t = c.content.length > 280 ? c.content.slice(0, 280) + '…' : c.content;
+    const flat = c.content.replace(/\s+/g, ' ').trim();
+    const t = flat.length > 280 ? flat.slice(0, 280) + '…' : flat;
     return `• ${t} [${i + 1}]`;
   });
   return `Dil modeli bu ortamda kapalı. Sorunuzla en ilgili bölümler:\n\n${lines.join('\n')}`;

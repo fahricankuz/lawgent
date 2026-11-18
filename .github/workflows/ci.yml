@@ -1,0 +1,47 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
+    env:
+      PGPASSWORD: postgres
+      TEST_DATABASE_SUPER_URL: postgres://postgres:postgres@localhost:5432/lawgent_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Sistem paketleri (OCR)
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-tur poppler-utils
+      - name: Veritabanı rolleri ve test veritabanı
+        run: |
+          psql -h localhost -U postgres -f infra/postgres/00-roles.sql
+          SUPER_URL=postgres://postgres:postgres@localhost:5432/postgres packages/db/scripts/reset-test-db.sh
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - name: İzolasyon testleri (RLS)
+        run: pnpm --filter @lawgent/db test
+      - run: pnpm --filter @lawgent/crypto test
+      - name: API testleri
+        run: pnpm --filter @lawgent/api test
+      - name: Worker testleri
+        working-directory: apps/worker
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -e '.[dev]'
+          .venv/bin/python -m pytest -q
+      - run: pnpm --filter @lawgent/web build

@@ -2,14 +2,16 @@
   "name": "lawgent",
   "private": true,
   "packageManager": "pnpm@10.28.0",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "db:migrate": "pnpm --filter @lawgent/db migrate",
-    "db:seed": "pnpm --filter @lawgent/db seed",
+    "db:seed": "pnpm --filter @lawgent/api seed",
     "format": "prettier --write ."
   },
   "devDependencies": {

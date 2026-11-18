@@ -17,6 +17,7 @@ import { documentRoutes } from './routes/documents.js';
 import { calendarRoutes } from './routes/calendar.js';
 import { chatRoutes } from './routes/chat.js';
 import { homeRoutes } from './routes/home.js';
+import { searchRoutes } from './routes/search.js';
 
 export const SESSION_COOKIE = 'lg_session';
 
@@ -157,6 +158,7 @@ export async function buildApp(deps: Deps) {
   await app.register(documentRoutes);
   await app.register(calendarRoutes);
   await app.register(chatRoutes);
+  await app.register(searchRoutes);
 
   return app;
 }

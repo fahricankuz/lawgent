@@ -1,0 +1,50 @@
+# Yerel geliştirme altyapısı. Uygulamalar (api, web, worker) makinede çalışır.
+#   docker compose -f infra/docker-compose.yml up -d
+name: lawgent
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: lawgent
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: lawgent
+      MINIO_ROOT_PASSWORD: lawgent-dev-secret
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [minio:/data]
+
+  # Kova: versiyonlu ve object lock etkin (delil kopyaları için).
+  minio-init:
+    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
+    depends_on: [minio]
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 lawgent lawgent-dev-secret; do sleep 1; done;
+      mc mb --ignore-existing --with-lock local/lawgent-documents;
+      mc version enable local/lawgent-documents;
+      mc encrypt set sse-s3 local/lawgent-documents || true"
+
+  # Yerel model (CPU'da yavaş; GPU sunucusunda vLLM kullanılır).
+  #   docker compose exec ollama ollama pull qwen2.5:7b-instruct
+  ollama:
+    image: ollama/ollama:0.6.8
+    profiles: [ai]
+    ports: ["11434:11434"]
+    volumes: [ollama:/root/.ollama]
+
+volumes:
+  pgdata:
+  minio:
+  ollama:
