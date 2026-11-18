@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "migrate": "tsx scripts/migrate.ts",
+    "migrate": "tsx --env-file-if-exists=../../.env scripts/migrate.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
