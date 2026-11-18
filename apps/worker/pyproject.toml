@@ -1,0 +1,27 @@
+[project]
+name = "lawgent-worker"
+version = "0.1.0"
+description = "Lawgent belge işleme hattı: OCR, parçalama, embedding"
+requires-python = ">=3.11"
+dependencies = [
+  "psycopg[binary]>=3.2",
+  "boto3>=1.35",
+  "cryptography>=43",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+# bge-m3 için (GPU sunucusunda). Geliştirmede kurulmadan da çalışır: yalnızca tam metin arama.
+embeddings = ["sentence-transformers>=3.0"]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["lawgent_worker"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

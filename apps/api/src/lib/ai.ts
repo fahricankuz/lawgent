@@ -73,7 +73,7 @@ export async function retrieve(
     }[]
   >`
     with q as (
-      select nullif(replace(plainto_tsquery('turkish', ${opts.question})::text, '&', '|'), '')::tsquery as tq
+      select app.tr_tsquery_or(${opts.question}) as tq
     ),
     scope as (
       select c.* from chunks c
